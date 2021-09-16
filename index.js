@@ -1,5 +1,7 @@
+require("dotenv").config();
 const { userType } = require("./utils");
-
+const bcrypt = require("bcrypt");
+const auth = require("./middlewares/auth");
 // express
 const express = require("express");
 const app = express();
@@ -9,25 +11,38 @@ app.use(express.json());
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+// routes
+const routes = require("./routes");
+
 app.get("/", async(req, res) => {
-    const allUsers = await prisma.user.findMany();
+    const allUsers = await prisma.user.findMany({
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            type: true,
+        },
+    });
     res.send(allUsers);
 });
 
-app.get("/create/:name", async(req, res) => {
-    const { name } = req.params;
-    const user = await prisma.user.create({
-        data: {
-            name: name,
-            email: `${name}@test.com`,
-            type: userType.teacher,
+app.get("/protected", auth({ type: userType.teacher }), async(req, res) => {
+    const allUsers = await prisma.user.findMany({
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            type: true,
         },
     });
-    res.send(user);
+    res.send(allUsers);
 });
+
+// auth routes
+app.use("/auth", routes.auth);
 
 PORT = process.env.PORT || 8000;
 
-const server = app.listen(PORT, () => {
+module.exports = app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
