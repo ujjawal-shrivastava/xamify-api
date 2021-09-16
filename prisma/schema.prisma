@@ -88,9 +88,9 @@ model Assessment {
   authorId  String
   subject   Subject        @relation(fields: [subjectId], references: [id])
   subjectId String
-  question  Question[]
+  questions Question[]
 
-  Submission Submission[]
+  submissions Submission[]
   @@map("assessment")
 }
 
