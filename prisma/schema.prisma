@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -13,17 +10,161 @@ generator client {
 enum UserType {
   STUDENT
   TEACHER
+
+  @@map("user_type")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  type      UserType
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  name        String?
+  type        UserType
+  profile     Profile?
+  assessments Assessment[]
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@map("user")
+}
+
+model Profile {
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  rollNo   String
+  dob      DateTime
+  year     Year     @relation(fields: [yearId], references: [id])
+  yearId   String
+  course   Course   @relation(fields: [courseId], references: [id])
+  courseId String
+
+  @@map("profile")
+}
+
+model Year {
+  id       String    @id @default(uuid())
+  label    String    @unique
+  profiles Profile[]
+  subjects Subject[]
+
+  @@map("year")
+}
+
+model Course {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  profiles Profile[]
+  subjects Subject[]
+
+  @@map("course")
+}
+
+model Subject {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  year        Year         @relation(fields: [yearId], references: [id])
+  yearId      String
+  course      Course       @relation(fields: [courseId], references: [id])
+  courseId    String
+  assessments Assessment[]
+
+
+  @@map("subject")
+}
+
+enum AssessmentType {
+  DIGITAL
+  WRITTEN
+
+  @@map("assessment_type")
+}
+
+model Assessment {
+  id        String         @id @default(uuid())
+  type      AssessmentType
+  author    User           @relation(fields: [authorId], references: [id])
+  authorId  String
+  subject   Subject        @relation(fields: [subjectId], references: [id])
+  subjectId String
+  question  Question[]
+
+  Submission Submission[]
+  @@map("assessment")
+}
+
+enum QuestionType {
+  MCQ
+  TYPE
+  IMAGE
+
+  @@map("question_type")
+}
+
+model Question {
+  id           String       @id @default(uuid())
+  type         QuestionType
+  assessment   Assessment   @relation(fields: [assessmentId], references: [id])
+  assessmentId String
+  text         String
+  choices      Choice[]
+  answers      Answer[]
+
+
+  @@map("question")
+}
+
+model Choice {
+  id         String   @id @default(uuid())
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  text       String
+
+  Answer Answer[]
+  @@map("choice")
+}
+
+enum SubmissionType {
+  OFFLINE
+  ONLINE
+
+  @@map("submission_type")
+}
+
+model Submission {
+  id           String         @id @default(uuid())
+  type         SubmissionType
+  student      User           @relation(fields: [studentId], references: [id])
+  studentId    String
+  assessment   Assessment     @relation(fields: [assessmentId], references: [id])
+  assessmentId String
+  answers      Answer[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("submission")
+}
+
+model Answer {
+  id           String     @id @default(uuid())
+  question     Question   @relation(fields: [questionId], references: [id])
+  questionId   String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  submissionId String
+  text         String?
+  choice       Choice?    @relation(fields: [choiceId], references: [id])
+  choiceId     String
+  images       Image[]
+
+  @@map("answer")
+}
+
+model Image {
+  id       String  @id @default(uuid())
+  data     Bytes
+  answer   Answer? @relation(fields: [answerId], references: [id])
+  answerId String?
+
+  @@map("image")
 }
