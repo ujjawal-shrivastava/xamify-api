@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { types } = require("../utils");
+const { userType } = require("../utils/types");
+const { genPassword } = require("../utils/utils");
 // prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -84,19 +85,16 @@ router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res) => {
 
     if (!email || !password) return res.sendStatus(401);
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     const teacher = await prisma.user.upsert({
         where: {
             email: email,
         },
         update: {
-            password: hashedPassword,
+            password: genPassword(password),
         },
         create: {
             email: email,
-            password: hashedPassword,
+            password: genPassword(password),
             type: userType.teacher,
         },
     });
