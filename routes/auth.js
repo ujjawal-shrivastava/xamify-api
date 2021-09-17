@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { userType } = require("../utils");
 // prisma
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -74,6 +75,33 @@ router.post("/token", async(req, res) => {
             refreshToken: getRefreshToken(user),
         });
     });
+});
+
+// default teacher create route
+router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res) => {
+    const email = process.env.DEFAULT_TEACHER_EMAIL;
+    const password = process.env.DEFAULT_TEACHER_PASSWORD;
+
+    if (!email || !password) return res.sendStatus(401);
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const teacher = await prisma.user.upsert({
+        where: {
+            email: email,
+        },
+        update: {
+            password: hashedPassword,
+        },
+        create: {
+            email: email,
+            password: hashedPassword,
+            type: userType.teacher,
+        },
+    });
+
+    teacher ? res.sendStatus(200) : res.sendStatus(400);
 });
 
 module.exports = router;
