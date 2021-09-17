@@ -8,6 +8,10 @@ app.use(express.json());
 // routes
 app.use("/api", require("./routes"));
 
+app.use("/ping", async(req, res) => {
+    res.send("Pong");
+});
+
 // error handler
 app.use(async(err, req, res, next) => {
     if (res.headersSent) {
