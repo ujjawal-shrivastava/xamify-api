@@ -70,7 +70,6 @@ model Subject {
   courseId    String
   assessments Assessment[]
 
-
   @@map("subject")
 }
 
@@ -82,15 +81,15 @@ enum AssessmentType {
 }
 
 model Assessment {
-  id        String         @id @default(uuid())
-  type      AssessmentType
-  author    User           @relation(fields: [authorId], references: [id])
-  authorId  String
-  subject   Subject        @relation(fields: [subjectId], references: [id])
-  subjectId String
-  questions Question[]
-
+  id          String         @id @default(uuid())
+  type        AssessmentType
+  author      User           @relation(fields: [authorId], references: [id])
+  authorId    String
+  subject     Subject        @relation(fields: [subjectId], references: [id])
+  subjectId   String
+  questions   Question[]
   submissions Submission[]
+
   @@map("assessment")
 }
 
