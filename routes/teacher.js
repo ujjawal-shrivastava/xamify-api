@@ -74,6 +74,7 @@ router.delete(
                 where: {
                     id: req.params.id,
                 },
+                select: teacherFields,
             });
 
             res.send(teacher);
