@@ -97,7 +97,7 @@ router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res) => {
         create: {
             email: email,
             password: hashedPassword,
-            type: types.userType.teacher,
+            type: userType.teacher,
         },
     });
 
