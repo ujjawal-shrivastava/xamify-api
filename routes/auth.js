@@ -79,27 +79,31 @@ router.post("/token", async(req, res) => {
 });
 
 // default teacher create route
-router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res) => {
-    const email = process.env.DEFAULT_TEACHER_EMAIL;
-    const password = process.env.DEFAULT_TEACHER_PASSWORD;
+router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res, next) => {
+    try {
+        const email = process.env.DEFAULT_TEACHER_EMAIL;
+        const password = process.env.DEFAULT_TEACHER_PASSWORD;
 
-    if (!email || !password) return res.sendStatus(401);
+        if (!email || !password) return res.sendStatus(401);
 
-    const teacher = await prisma.user.upsert({
-        where: {
-            email: email,
-        },
-        update: {
-            password: genPassword(password),
-        },
-        create: {
-            email: email,
-            password: genPassword(password),
-            type: userType.teacher,
-        },
-    });
+        const teacher = await prisma.user.upsert({
+            where: {
+                email: email,
+            },
+            update: {
+                password: await genPassword(password),
+            },
+            create: {
+                email: email,
+                password: await genPassword(password),
+                type: userType.teacher,
+            },
+        });
 
-    teacher ? res.sendStatus(200) : res.sendStatus(400);
+        teacher ? res.sendStatus(200) : res.sendStatus(400);
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = router;
