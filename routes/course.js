@@ -1,16 +1,15 @@
 const { auth } = require("../middlewares");
-const { userType } = require("../utils/types");
 
 //express
 const express = require("express");
 const router = express.Router();
 
 //prisma
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient, UserType } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-router.get("/", auth({ type: userType.teacher }), async(req, res, next) => {
+router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const courses = await prisma.course.findMany({});
         res.send(courses);
@@ -19,7 +18,7 @@ router.get("/", auth({ type: userType.teacher }), async(req, res, next) => {
     }
 });
 
-router.get("/:id", auth({ type: userType.teacher }), async(req, res, next) => {
+router.get("/:id", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const course = await prisma.course.findUnique({
             where: {
@@ -32,7 +31,7 @@ router.get("/:id", auth({ type: userType.teacher }), async(req, res, next) => {
     }
 });
 
-router.post("/", auth({ type: userType.teacher }), async(req, res, next) => {
+router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const course = await prisma.course.create({
             data: {
@@ -47,7 +46,7 @@ router.post("/", auth({ type: userType.teacher }), async(req, res, next) => {
 
 router.delete(
     "/:id",
-    auth({ type: userType.teacher }),
+    auth({ type: UserType.TEACHER }),
     async(req, res, next) => {
         try {
             const course = await prisma.course.delete({
@@ -65,7 +64,7 @@ router.delete(
 
 router.patch(
     "/:id",
-    auth({ type: userType.teacher }),
+    auth({ type: UserType.TEACHER }),
     async(req, res, next) => {
         try {
             const { id } = req.params;

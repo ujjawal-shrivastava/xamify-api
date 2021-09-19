@@ -1,13 +1,11 @@
 const { auth } = require("../middlewares");
 const { genPassword } = require("../utils/utils");
-const { userType } = require("../utils/types");
-
 //express
 const express = require("express");
 const router = express.Router();
 
 //prisma
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient, UserType } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
@@ -18,12 +16,12 @@ const teacherFields = {
     type: true,
 };
 
-router.get("/", auth({ type: userType.teacher }), async(req, res, next) => {
+router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const teachers = await prisma.user.findMany({
             select: teacherFields,
             where: {
-                type: userType.teacher,
+                type: UserType.TEACHER,
             },
         });
         res.send(teachers);
@@ -32,7 +30,7 @@ router.get("/", auth({ type: userType.teacher }), async(req, res, next) => {
     }
 });
 
-router.get("/:id", auth({ type: userType.teacher }), async(req, res, next) => {
+router.get("/:id", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const teacher = await prisma.user.findUnique({
             where: {
@@ -41,7 +39,7 @@ router.get("/:id", auth({ type: userType.teacher }), async(req, res, next) => {
             select: teacherFields,
         });
 
-        teacher && teacher.type == userType.teacher ?
+        teacher && teacher.type == UserType.TEACHER ?
             res.send(teacher) :
             res.status(404).send({ error: "Teacher not found" });
     } catch (err) {
@@ -49,13 +47,13 @@ router.get("/:id", auth({ type: userType.teacher }), async(req, res, next) => {
     }
 });
 
-router.post("/", auth({ type: userType.teacher }), async(req, res, next) => {
+router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const teacher = await prisma.user.create({
             data: {
                 email: req.body.email,
                 password: await genPassword(req.body.password),
-                type: userType.teacher,
+                type: UserType.TEACHER,
             },
             select: teacherFields,
         });
@@ -67,7 +65,7 @@ router.post("/", auth({ type: userType.teacher }), async(req, res, next) => {
 
 router.delete(
     "/:id",
-    auth({ type: userType.teacher }),
+    auth({ type: UserType.TEACHER }),
     async(req, res, next) => {
         try {
             const teacher = await prisma.user.delete({
@@ -86,7 +84,7 @@ router.delete(
 
 router.patch(
     "/:id",
-    auth({ type: userType.teacher }),
+    auth({ type: UserType.TEACHER }),
     async(req, res, next) => {
         try {
             const { id } = req.params;
