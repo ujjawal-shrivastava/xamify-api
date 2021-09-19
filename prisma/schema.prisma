@@ -88,6 +88,8 @@ model Assessment {
   authorId    String
   subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId   String
+  duration    DateTime       @db.Timetz
+  schedule    DateTime       @db.Timestamptz
   questions   Question[]
   submissions Submission[]
 

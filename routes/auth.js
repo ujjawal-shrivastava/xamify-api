@@ -3,10 +3,9 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { auth } = require("../middlewares");
-const { userType } = require("../utils/types");
 const { genPassword } = require("../utils/utils");
 // prisma
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient, UserType } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // UTILS
@@ -97,7 +96,7 @@ router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res, next) => {
             create: {
                 email: email,
                 password: await genPassword(password),
-                type: userType.teacher,
+                type: UserType.TEACHER,
             },
         });
 
