@@ -33,7 +33,7 @@ model Profile {
   id       String   @id @default(uuid())
   user     User     @relation(fields: [userId], references: [id])
   userId   String
-  rollNo   String
+  rollNo   String 
   dob      DateTime
   year     Year     @relation(fields: [yearId], references: [id])
   yearId   String
