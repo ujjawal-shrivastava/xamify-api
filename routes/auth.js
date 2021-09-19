@@ -106,4 +106,47 @@ router.get(`/${process.env.DEFAULT_TEACHER_ROUTE}`, async(req, res, next) => {
     }
 });
 
+// change password
+router.patch("/changepassword", async(req, res, next) => {
+    try {
+        const { email, oldPassword, newPassword } = req.body;
+        const user = await prisma.user.findUnique({
+            select: {
+                email: true,
+                type: true,
+                password: true,
+            },
+            where: {
+                email: email,
+            },
+        });
+
+        if (user) {
+            const validPassword = await bcrypt.compare(oldPassword, user.password);
+            if (validPassword) {
+                const user = await prisma.user.update({
+                    data: {
+                        password: genPassword(newPassword),
+                    },
+                    where: {
+                        email: email,
+                    },
+                });
+                res.send({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    type: user.type,
+                });
+            } else {
+                res.status(400).send({ error: "Invalid Password" });
+            }
+        } else {
+            res.status(401).send({ error: "User does not exist" });
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

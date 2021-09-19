@@ -4,7 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 enum UserType {
@@ -31,9 +32,9 @@ model User {
 
 model Profile {
   id       String   @id @default(uuid())
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
-  rollNo   String
+  rollNo   String   @unique
   dob      DateTime
   year     Year     @relation(fields: [yearId], references: [id])
   yearId   String
@@ -64,9 +65,9 @@ model Course {
 model Subject {
   id          String       @id @default(uuid())
   name        String       @unique
-  year        Year         @relation(fields: [yearId], references: [id])
+  year        Year         @relation(fields: [yearId], references: [id], onDelete: Cascade)
   yearId      String
-  course      Course       @relation(fields: [courseId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId    String
   assessments Assessment[]
 
@@ -83,9 +84,9 @@ enum AssessmentType {
 model Assessment {
   id          String         @id @default(uuid())
   type        AssessmentType
-  author      User           @relation(fields: [authorId], references: [id])
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
-  subject     Subject        @relation(fields: [subjectId], references: [id])
+  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId   String
   questions   Question[]
   submissions Submission[]
@@ -104,7 +105,7 @@ enum QuestionType {
 model Question {
   id           String       @id @default(uuid())
   type         QuestionType
-  assessment   Assessment   @relation(fields: [assessmentId], references: [id])
+  assessment   Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   assessmentId String
   text         String
   choices      Choice[]
@@ -116,7 +117,7 @@ model Question {
 
 model Choice {
   id         String   @id @default(uuid())
-  question   Question @relation(fields: [questionId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId String
   text       String
 
@@ -134,9 +135,9 @@ enum SubmissionType {
 model Submission {
   id           String         @id @default(uuid())
   type         SubmissionType
-  student      User           @relation(fields: [studentId], references: [id])
+  student      User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId    String
-  assessment   Assessment     @relation(fields: [assessmentId], references: [id])
+  assessment   Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   assessmentId String
   answers      Answer[]
   createdAt    DateTime       @default(now())
@@ -147,9 +148,9 @@ model Submission {
 
 model Answer {
   id           String     @id @default(uuid())
-  question     Question   @relation(fields: [questionId], references: [id])
+  question     Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId   String
-  submission   Submission @relation(fields: [submissionId], references: [id])
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   submissionId String
   text         String?
   choice       Choice?    @relation(fields: [choiceId], references: [id])
@@ -162,7 +163,7 @@ model Answer {
 model Image {
   id       String  @id @default(uuid())
   data     Bytes
-  answer   Answer? @relation(fields: [answerId], references: [id])
+  answer   Answer? @relation(fields: [answerId], references: [id], onDelete: Cascade)
   answerId String?
 
   @@map("image")

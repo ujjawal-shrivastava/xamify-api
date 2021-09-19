@@ -94,7 +94,10 @@ router.patch(
                 where: {
                     id: id,
                 },
-                data: req.body,
+                data: {
+                    email: req.body.email,
+                    name: req.body.name,
+                },
                 select: teacherFields,
             });
             res.send(teacher);
