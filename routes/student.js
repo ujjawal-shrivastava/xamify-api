@@ -11,12 +11,39 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
+const studentsData = async(students) => {
+    return await students.map(async(value) => {
+        const { email, name, rollNo, dob, yearId, courseId } = value;
+        const dateFormatted = await dateFormat(dob);
+        return {
+            email: email,
+            name: name,
+            password: await genPassword(`${rollNo}@${dateFormatted}`),
+            type: userType.student,
+            profile: {
+                create: {
+                    rollNo: rollNo,
+                    dob: dob,
+                    yearId: yearId,
+                    courseId: courseId,
+                },
+            },
+        };
+    });
+};
+
 const studentFields = {
     id: true,
     email: true,
     name: true,
     type: true,
-    profile: true,
+    profile: {
+        select: {
+            rollNo: true,
+            year: true,
+            course: true,
+        },
+    },
 };
 
 router.get("/", auth({ type: userType.teacher }), async(req, res, next) => {
@@ -82,11 +109,17 @@ router.post(
     auth({ type: userType.teacher }),
     async(req, res, next) => {
         try {
-            const { email, name, rollNo, dob, yearId, courseId } = req.body;
-            const dateFormatted = await dateFormat(dob);
-            const students = await prisma.user.createMany({
-                skipDuplicates: true,
-                data: {},
+            const data = await studentsData(req.body.students);
+            var students = [];
+            await prisma.$transaction(async(prisma) => {
+                for (let i = 0; i < data.length; i++) {
+                    const studentData = await data[i];
+                    const student = await prisma.user.create({
+                        data: studentData,
+                        select: studentFields,
+                    });
+                    students.push(student);
+                }
             });
             res.send(students);
         } catch (err) {
@@ -104,6 +137,7 @@ router.delete(
                 where: {
                     id: req.params.id,
                 },
+
                 select: studentFields,
             });
 
