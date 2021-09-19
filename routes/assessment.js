@@ -5,7 +5,7 @@ const express = require("express");
 const router = express.Router();
 
 //prisma
-const { PrismaClient, UserType } = require("@prisma/client");
+const { PrismaClient, UserType, QuestionType } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
@@ -52,6 +52,22 @@ const assessmentFields = {
             },
         },
     },
+};
+
+const getQuestions = (questions) => {
+    var result = [];
+    questions.forEach((question) => {
+        result.push({
+            type: question.type,
+            text: question.text,
+            choices: question.type == QuestionType.MCQ ?
+                {
+                    create: question.choices,
+                } :
+                {},
+        });
+    });
+    return result;
 };
 
 router.get("/", auth(), async(req, res, next) => {
@@ -106,6 +122,29 @@ router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     }
 });
 
+router.post(
+    "/:id",
+    auth({ type: UserType.TEACHER }),
+    async(req, res, next) => {
+        try {
+            const assessment = await prisma.assessment.update({
+                where: {
+                    id: req.params.id,
+                },
+                select: assessmentFields,
+                data: {
+                    questions: {
+                        create: getQuestions(req.body.questions), //getQuestions(req.body.questions),
+                    },
+                },
+            });
+            res.send(assessment);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
 router.delete(
     "/:id",
     auth({ type: UserType.TEACHER }),
@@ -117,26 +156,6 @@ router.delete(
                 },
             });
 
-            res.send(assessment);
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.patch(
-    "/:id",
-    auth({ type: UserType.TEACHER }),
-    async(req, res, next) => {
-        try {
-            const { id } = req.params;
-            const assessment = await prisma.assessment.update({
-                where: {
-                    id: id,
-                },
-                data: req.body,
-                select: assessmentFields,
-            });
             res.send(assessment);
         } catch (err) {
             next(err);

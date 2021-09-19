@@ -113,7 +113,7 @@ model Question {
   choices      Choice[]
   answers      Answer[]
 
-
+  @@unique([assessmentId, text])
   @@map("question")
 }
 
