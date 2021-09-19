@@ -58,11 +58,11 @@ router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     }
 });
 
-router.get("/:id", auth({ type: UserType.TEACHER }), async(req, res, next) => {
+router.get("/:id", auth(), async(req, res, next) => {
     try {
         const student = await prisma.user.findUnique({
             where: {
-                id: req.params.id,
+                id: req.user.type == UserType.TEACHER ? req.params.id : req.user.id,
             },
             select: studentFields,
         });

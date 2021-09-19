@@ -9,7 +9,7 @@ const { PrismaClient, UserType } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
+router.get("/", auth(), async(req, res, next) => {
     try {
         const years = await prisma.year.findMany({});
         res.send(years);
@@ -18,7 +18,7 @@ router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     }
 });
 
-router.get("/:id", auth({ type: UserType.TEACHER }), async(req, res, next) => {
+router.get("/:id", auth(), async(req, res, next) => {
     try {
         const year = await prisma.year.findUnique({
             where: {

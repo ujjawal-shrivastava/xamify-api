@@ -26,7 +26,7 @@ const subjectFields = {
     },
 };
 
-router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
+router.get("/", auth(), async(req, res, next) => {
     try {
         const subjects = await prisma.subject.findMany({
             select: subjectFields,
@@ -37,7 +37,7 @@ router.get("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     }
 });
 
-router.get("/:id", auth({ type: UserType.TEACHER }), async(req, res, next) => {
+router.get("/:id", auth(), async(req, res, next) => {
     try {
         const subject = await prisma.subject.findUnique({
             where: {
