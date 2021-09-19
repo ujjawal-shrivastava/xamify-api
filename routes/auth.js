@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { auth } = require("../middlewares");
 const { userType } = require("../utils/types");
 const { genPassword } = require("../utils/utils");
 // prisma
@@ -144,6 +145,24 @@ router.patch("/changepassword", async(req, res, next) => {
         } else {
             res.status(401).send({ error: "User does not exist" });
         }
+    } catch (error) {
+        next(error);
+    }
+});
+router.get("/me", auth(), async(req, res, next) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                email: req.user.email,
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                type: true,
+            },
+        });
+        res.send(user);
     } catch (error) {
         next(error);
     }
