@@ -11,5 +11,8 @@ api.use("/courses", require("./course"));
 api.use("/years", require("./year"));
 api.use("/subjects", require("./subject"));
 api.use("/assessments", require("./assessment"));
+api.use("/questions", require("./question"));
+api.use("/choices", require("./choice"));
+api.use("/types", require("./types"));
 
 module.exports = api;
