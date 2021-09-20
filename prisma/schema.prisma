@@ -124,6 +124,7 @@ model Choice {
   text       String
   answers    Answer[]
 
+  @@unique([questionId, text])
   @@map("choice")
 }
 
@@ -145,6 +146,7 @@ model Submission {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
+  @@unique([studentId, assessmentId])
   @@map("submission")
 }
 
@@ -159,6 +161,7 @@ model Answer {
   choiceId     String
   images       Image[]
 
+  @@unique([questionId, submissionId])
   @@map("answer")
 }
 
