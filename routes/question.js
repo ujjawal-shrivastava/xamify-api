@@ -21,6 +21,23 @@ const questionFields = {
     },
 };
 
+const questionAssessmentFields = {
+    ...questionFields,
+    assessment: {
+        select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            subject: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+        },
+    },
+};
+
 router.get("/assessment/:assessmentId", auth(), async(req, res, next) => {
     try {
         const questions = await prisma.question.findMany({
@@ -41,7 +58,7 @@ router.get("/:id", auth(), async(req, res, next) => {
             where: {
                 id: req.params.id,
             },
-            select: questionFields,
+            select: questionAssessmentFields,
         });
         res.send(question);
     } catch (err) {
@@ -68,7 +85,7 @@ router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
                     } :
                     {},
             },
-            select: questionFields,
+            select: questionAssessmentFields,
         });
         res.send(question);
     } catch (err) {
@@ -85,6 +102,7 @@ router.delete(
                 where: {
                     id: req.params.id,
                 },
+                select: questionAssessmentFields,
             });
 
             res.send(question);
@@ -114,7 +132,7 @@ router.patch(
                         },
                     },
                 },
-                select: questionFields,
+                select: questionAssessmentFields,
             });
             res.send(question);
         } catch (err) {
