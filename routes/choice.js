@@ -23,8 +23,10 @@ const choiceQuestionFields = {
                 select: {
                     id: true,
                     subject: {
-                        id: true,
-                        name: true,
+                        select: {
+                            id: true,
+                            name: true,
+                        },
                     },
                 },
             },
