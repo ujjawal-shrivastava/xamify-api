@@ -70,6 +70,22 @@ const getQuestions = (questions) => {
     return result;
 };
 
+const getQuestionsUPdate = (questions) => {
+    var result = [];
+    questions.forEach((question) => {
+        result.push({
+            type: question.type,
+            text: question.text,
+            choices: question.type == QuestionType.MCQ ?
+                {
+                    create: question.choices,
+                } :
+                {},
+        });
+    });
+    return result;
+};
+
 router.get("/", auth(), async(req, res, next) => {
     try {
         const assessments = await prisma.assessment.findMany({
@@ -137,6 +153,32 @@ router.post(
                         create: getQuestions(req.body.questions), //getQuestions(req.body.questions),
                     },
                 },
+            });
+            res.send(assessment);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+router.patch(
+    "/:id",
+    auth({ type: UserType.TEACHER }),
+    async(req, res, next) => {
+        try {
+            const { type, subjectId, startTime, endTime } = req.body;
+            const assessment = await prisma.assessment.update({
+                data: {
+                    type: type,
+                    startTime: startTime,
+                    endTime: endTime,
+                    subject: {
+                        connect: {
+                            id: subjectId,
+                        },
+                    },
+                },
+                select: assessmentFields,
             });
             res.send(assessment);
         } catch (err) {
