@@ -180,7 +180,7 @@ router.post("/", auth({ type: UserType.STUDENT }), async(req, res, next) => {
         const submission = await prisma.$transaction(async(prisma) => {
             const student = await prisma.user.findUnique({
                 where: {
-                    id: userId,
+                    email: req.user.email,
                 },
                 select: {
                     id: true,
@@ -270,12 +270,17 @@ router.post("/", auth({ type: UserType.STUDENT }), async(req, res, next) => {
             var answersData = [];
             answers.forEach((answer) => {
                 const ques = assessment.questions.find(
-                    (x) => (x.id = answer.questionId)
+                    (x) => x.id == answer.questionId
                 );
                 if (ques.type == QuestionType.MCQ) {
                     if (assessment.type != AssessmentType.DIGITAL)
                         throw new Error("MCQ Answers are only allowed in DIGITAL Mode");
                     answersData.push({
+                        question: {
+                            connect: {
+                                id: answer.questionId,
+                            },
+                        },
                         choice: {
                             connect: {
                                 id: answer.choiceId,
@@ -286,20 +291,31 @@ router.post("/", auth({ type: UserType.STUDENT }), async(req, res, next) => {
                     if (assessment.type != AssessmentType.DIGITAL)
                         throw new Error("TYPED Answers are only allowed in DIGITAL Mode");
                     answersData.push({
+                        question: {
+                            connect: {
+                                id: answer.questionId,
+                            },
+                        },
                         text: answer.text,
                     });
                 } else if (ques.type == QuestionType.IMAGE) {
                     if (assessment.type != AssessmentType.DIGITAL)
                         throw new Error("IMAGE Answers are only allowed in WRITTEN Mode");
                     answersData.push({
+                        question: {
+                            connect: {
+                                id: answer.questionId,
+                            },
+                        },
                         images: {
-                            create: answer.images,
+                            createMany: { data: answer.images },
                         },
                     });
                 } else {
                     throw new Error("Invalid Question Type");
                 }
             });
+            console.log(answersData);
             const submission = await prisma.submission.create({
                 data: {
                     type: type,
