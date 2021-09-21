@@ -158,7 +158,7 @@ model Answer {
   submissionId String
   text         String?
   choice       Choice?    @relation(fields: [choiceId], references: [id])
-  choiceId     String
+  choiceId     String?
   images       Image[]
 
   @@unique([questionId, submissionId])
@@ -167,7 +167,7 @@ model Answer {
 
 model Image {
   id       String  @id @default(uuid())
-  data     Bytes
+  data     String
   answer   Answer? @relation(fields: [answerId], references: [id], onDelete: Cascade)
   answerId String?
 
