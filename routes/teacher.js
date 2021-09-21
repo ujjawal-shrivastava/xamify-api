@@ -52,6 +52,7 @@ router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
         const teacher = await prisma.user.create({
             data: {
                 email: req.body.email,
+                name: req.body.name,
                 password: await genPassword(req.body.password),
                 type: UserType.TEACHER,
             },
