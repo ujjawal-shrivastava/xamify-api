@@ -31,6 +31,38 @@ router.get("/:id", auth(), async(req, res, next) => {
     }
 });
 
+router.get("/subjects/all", auth(), async(req, res, next) => {
+    try {
+        const [courses, subjects, years] = await prisma.$transaction([
+            prisma.course.findMany({
+                select: { id: true, name: true },
+            }),
+            prisma.subject.findMany({
+                select: { id: true, name: true, yearId: true, courseId: true },
+            }),
+            prisma.year.findMany({
+                select: { id: true, label: true },
+            }),
+        ]);
+        var result = [];
+        courses.forEach((course) => {
+            const c = {...course, years: [] };
+            years.forEach((year) => {
+                const s = subjects.filter(
+                    (subject) =>
+                    subject.yearId == year.id && subject.courseId == course.id
+                );
+                const y = {...year, subjects: s };
+                c.years.push(y);
+            });
+            result.push(c);
+        });
+        res.send(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
         const course = await prisma.course.create({
