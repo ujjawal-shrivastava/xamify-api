@@ -39,6 +39,11 @@ const assessmentFields = {
     },
     startTime: true,
     endTime: true,
+};
+
+const assessmentTeacherFields = {
+    ...assessmentFields,
+    instructions: true,
     questions: {
         select: {
             id: true,
@@ -73,7 +78,9 @@ const getQuestions = (questions) => {
 router.get("/", auth(), async(req, res, next) => {
     try {
         const assessments = await prisma.assessment.findMany({
-            select: assessmentFields,
+            select: req.user.type == UserType.TEACHER ?
+                assessmentTeacherFields :
+                assessmentFields,
         });
         res.send(assessments);
     } catch (err) {
@@ -87,8 +94,19 @@ router.get("/:id", auth(), async(req, res, next) => {
             where: {
                 id: req.params.id,
             },
-            select: assessmentFields,
+            select: assessmentTeacherFields,
         });
+        if (req.user.type == UserType.STUDENT) {
+            const submission = await prisma.submission.findUnique({
+                where: {
+                    studentId_assessmentId: {
+                        studentId: req.user.id,
+                        assessmentId: assessment.id,
+                    },
+                },
+            });
+            if (submission) throw Error("Student has already taken this assessment");
+        }
         res.send(assessment);
     } catch (err) {
         next(err);
@@ -97,9 +115,10 @@ router.get("/:id", auth(), async(req, res, next) => {
 
 router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
-        const { type, subjectId, startTime, endTime } = req.body;
+        const { type, subjectId, startTime, endTime, instructions } = req.body;
         const assessment = await prisma.assessment.create({
             data: {
+                instructions: instructions,
                 type: type,
                 author: {
                     connect: {
@@ -150,12 +169,13 @@ router.patch(
     auth({ type: UserType.TEACHER }),
     async(req, res, next) => {
         try {
-            const { type, subjectId, startTime, endTime } = req.body;
+            const { type, subjectId, startTime, endTime, instructions } = req.body;
             const assessment = await prisma.assessment.update({
                 where: {
                     id: req.params.id,
                 },
                 data: {
+                    instructions: instructions,
                     type: type,
                     startTime: startTime,
                     endTime: endTime,
