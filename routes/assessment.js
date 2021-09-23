@@ -39,6 +39,10 @@ const assessmentFields = {
     },
     startTime: true,
     endTime: true,
+};
+
+const assessmentTeacherFields = {
+    ...assessmentFields,
     questions: {
         select: {
             id: true,
@@ -73,7 +77,9 @@ const getQuestions = (questions) => {
 router.get("/", auth(), async(req, res, next) => {
     try {
         const assessments = await prisma.assessment.findMany({
-            select: assessmentFields,
+            select: req.user.type == UserType.TEACHER ?
+                assessmentTeacherFields :
+                assessmentFields,
         });
         res.send(assessments);
     } catch (err) {
@@ -89,6 +95,17 @@ router.get("/:id", auth(), async(req, res, next) => {
             },
             select: assessmentFields,
         });
+        if (req.user.type == UserType.STUDENT) {
+            const submission = await prisma.submission.findUnique({
+                where: {
+                    studentId_assessmentId: {
+                        studentId: req.user.id,
+                        assessmentId: assessment.id,
+                    },
+                },
+            });
+            if (submission) throw Error("Student has already taken this assessment");
+        }
         res.send(assessment);
     } catch (err) {
         next(err);
