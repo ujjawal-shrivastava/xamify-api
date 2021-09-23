@@ -43,6 +43,7 @@ const assessmentFields = {
 
 const assessmentTeacherFields = {
     ...assessmentFields,
+    instructions: true,
     questions: {
         select: {
             id: true,
@@ -93,7 +94,7 @@ router.get("/:id", auth(), async(req, res, next) => {
             where: {
                 id: req.params.id,
             },
-            select: assessmentFields,
+            select: assessmentTeacherFields,
         });
         if (req.user.type == UserType.STUDENT) {
             const submission = await prisma.submission.findUnique({
@@ -114,9 +115,10 @@ router.get("/:id", auth(), async(req, res, next) => {
 
 router.post("/", auth({ type: UserType.TEACHER }), async(req, res, next) => {
     try {
-        const { type, subjectId, startTime, endTime } = req.body;
+        const { type, subjectId, startTime, endTime, instructions } = req.body;
         const assessment = await prisma.assessment.create({
             data: {
+                instructions: instructions,
                 type: type,
                 author: {
                     connect: {
@@ -167,12 +169,13 @@ router.patch(
     auth({ type: UserType.TEACHER }),
     async(req, res, next) => {
         try {
-            const { type, subjectId, startTime, endTime } = req.body;
+            const { type, subjectId, startTime, endTime, instructions } = req.body;
             const assessment = await prisma.assessment.update({
                 where: {
                     id: req.params.id,
                 },
                 data: {
+                    instructions: instructions,
                     type: type,
                     startTime: startTime,
                     endTime: endTime,

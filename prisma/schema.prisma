@@ -82,16 +82,17 @@ enum AssessmentType {
 }
 
 model Assessment {
-  id          String         @id @default(uuid())
-  type        AssessmentType
-  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId    String
-  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  subjectId   String
-  startTime   DateTime
-  endTime     DateTime
-  questions   Question[]
-  submissions Submission[]
+  id           String         @id @default(uuid())
+  type         AssessmentType
+  author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId     String
+  subject      Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId    String
+  instructions String?
+  startTime    DateTime
+  endTime      DateTime
+  questions    Question[]
+  submissions  Submission[]
 
   @@map("assessment")
 }
