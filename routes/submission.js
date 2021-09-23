@@ -1,5 +1,6 @@
 const { auth } = require("../middlewares");
-
+const axios = require("axios");
+const { Blob } = require("buffer");
 //express
 const express = require("express");
 const router = express.Router();
@@ -9,7 +10,6 @@ const {
     PrismaClient,
     UserType,
     AssessmentType,
-    SubmissionType,
     QuestionType,
 } = require("@prisma/client");
 
@@ -149,25 +149,58 @@ router.get("/assessment/:assessmentId", auth(), async(req, res, next) => {
 
 router.get("/:id", auth(), async(req, res, next) => {
     try {
-        if (req.user.type == UserType.TEACHER) {
-            const submissions = await prisma.submission.findUnique({
-                where: {
-                    id: req.params.id,
-                },
-                select: submissionFields,
-            });
-            res.send(submissions);
-        } else {
-            const submission = await prisma.submission.findUnique({
-                where: {
-                    id: req.params.id,
-                    studentId_assessmentId: {
-                        studentId: req.user.id,
-                    },
-                },
-                select: submissionFields,
-            });
+        const submission = await prisma.submission.findUnique({
+            where: {
+                id: req.params.id,
+            },
+            select: submissionFields,
+        });
+        if (
+            req.user.type == UserType.TEACHER ||
+            submission.student.id == req.user.id
+        ) {
             res.send(submission);
+        } else {
+            throw Error("Current user does not have this submission");
+        }
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get("/:id/pdf", auth(), async(req, res, next) => {
+    try {
+        const submission = await prisma.submission.findUnique({
+            where: {
+                id: req.params.id,
+            },
+            select: submissionFields,
+        });
+        if (
+            req.user.type == UserType.TEACHER ||
+            submission.student.id == req.user.id
+        ) {
+            axios
+                .post(process.env.PDF_API_URL, {
+                    submission: submission,
+                    headers: {
+                        Accept: "application/pdf",
+                    },
+                })
+                .then((pdfRes) => {
+                    const pdf = Buffer.from(pdfRes.data.buffer, "base64");
+                    res.set({
+                        "Content-Type": "application/pdf",
+                        "Content-Length": pdf.length,
+                        "Content-Disposition": `attachment; filename=${submission.student.profile.rollNo}.pdf`,
+                    });
+                    res.send(pdf);
+                })
+                .catch((error) => {
+                    next(error);
+                });
+        } else {
+            throw Error("Current user does not have this submission");
         }
     } catch (err) {
         next(err);

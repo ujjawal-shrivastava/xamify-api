@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@prisma/client": "^3.0.2",
+    "axios": "^0.21.4",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
