@@ -19,7 +19,7 @@ const auth = (options = {}) => {
                     error: `${user.type} is not authorized to access this route`,
                 });
 
-            req.user = { email: user.email, type: user.type };
+            req.user = { id: user.id, email: user.email, type: user.type };
             next();
         });
     };

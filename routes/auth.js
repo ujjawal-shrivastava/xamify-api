@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 
 // generate access token
 const getAccessToken = (user) => {
-    return jwt.sign({ email: user.email, type: user.type },
+    return jwt.sign({ id: user.id, email: user.email, type: user.type },
         process.env.ACCESS_TOKEN_KEY, {
             expiresIn: process.env.JWT_ACC_EXP,
         }
@@ -21,7 +21,7 @@ const getAccessToken = (user) => {
 
 // generate refresh token
 const getRefreshToken = (user) => {
-    return jwt.sign({ email: user.email, type: user.type },
+    return jwt.sign({ id: user.id, email: user.email, type: user.type },
         process.env.REFRESH_TOKEN_KEY, {
             expiresIn: process.env.JWT_REF_EXP,
         }
@@ -40,6 +40,7 @@ router.post("/login", async(req, res) => {
 
     const user = await prisma.user.findUnique({
         select: {
+            id: true,
             email: true,
             type: true,
             password: true,
