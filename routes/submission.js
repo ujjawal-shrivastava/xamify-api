@@ -332,7 +332,7 @@ router.post("/", auth({ type: UserType.STUDENT }), async(req, res, next) => {
                         text: answer.text,
                     });
                 } else if (ques.type == QuestionType.IMAGE) {
-                    if (assessment.type != AssessmentType.DIGITAL)
+                    if (assessment.type != AssessmentType.WRITTEN)
                         throw new Error("IMAGE Answers are only allowed in WRITTEN Mode");
                     answersData.push({
                         question: {
